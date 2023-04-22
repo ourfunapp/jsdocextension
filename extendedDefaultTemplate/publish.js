@@ -483,7 +483,7 @@ function buildGroupNav(members, title) {
  * @return {string} The HTML for the navigation sidebar.
  */
 function buildNav(members, navTypes = null, betterDocs) {
-  const href = betterDocs.landing ? 'docs.html' : 'index.html'
+  const href = 'index.html'
   var nav = navTypes ? '' : `<h2><a href="${href}">Documentation</a></h2>`
 
   var categorised = {}
