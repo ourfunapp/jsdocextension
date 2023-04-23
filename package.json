@@ -1,15 +1,18 @@
 {
-  "name": "extendedjsdoctemplate",
+  "name": "jsdocextension",
   "version": "1.0.0",
-  "description": "custom jsdoc template",
+  "description": "Jsdoc extension including templates and plugins",
+  "author": "ourfunapp",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ourfunapp/extendedjsdoctemplate.git"
+    "url": "https://github.com/ourfunapp/jsdocextension.git"
   },
-  "author": "",
-  "license": "ISC"
+  "peerDependencies": {
+    "jsdoc": ">=3.6.1"
+  }
 }
