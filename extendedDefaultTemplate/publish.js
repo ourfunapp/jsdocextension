@@ -1,4 +1,3 @@
-// @ts-nocheck
 const doop = require('jsdoc/util/doop')
 const env = require('jsdoc/env')
 const fs = require('jsdoc/fs')
@@ -8,16 +7,6 @@ const path = require('jsdoc/path')
 const { taffy } = require('@jsdoc/salty')
 const template = require('jsdoc/template')
 const util = require('util')
-
-// import doop from 'jsdoc/util/doop'
-// import env from 'jsdoc/env'
-// import fs from 'jsdoc/fs'
-// import helper from 'jsdoc/util/templateHelper'
-// import logger from 'jsdoc/util/logger'
-// import path from 'jsdoc/path'
-// import { taffy } from '@jsdoc/salty'
-// import template from 'jsdoc/template'
-// import util from 'util'
 
 const htmlsafe = helper.htmlsafe
 const linkto = helper.linkto
@@ -335,7 +324,16 @@ function attachModuleSymbols(doclets, modules) {
   })
 }
 
-function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
+function buildMemberNav(
+  items,
+  itemHeading,
+  itemsSeen,
+  linktoFn,
+  jsdocextension = null
+) {
+  const jsdocextensionOpts = jsdocextension
+    ? jsdocextension
+    : { includeSubcategoryTypeInNav: false }
   const subCategories = items.reduce((memo, item) => {
     const subCategory = item.subCategory || ''
     memo[subCategory] = memo[subCategory] || []
@@ -400,7 +398,11 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
       if (itemsNav !== '') {
         var heading = itemHeading
         if (subCategoryName) {
-          heading = heading + ' / ' + subCategoryName
+          if (jsdocextensionOpts.includeSubcategoryTypeInNav) {
+            heading = subCategoryName + ' / ' + heading
+          } else {
+            heading = subCategoryName
+          }
         }
         nav += '<h3>' + heading + '</h3><ul>' + itemsNav + '</ul>'
       }
@@ -418,7 +420,7 @@ function linktoExternal(longName, name) {
   return linkto(longName, name.replace(/(^"|"$)/g, ''))
 }
 
-function buildGroupNav(members, title) {
+function buildGroupNav(members, title, jsdocextension = null) {
   var globalNav
   var seenTutorials = {}
   var nav = ''
@@ -431,21 +433,65 @@ function buildGroupNav(members, title) {
     members.tutorials || [],
     'Tutorials',
     seenTutorials,
-    linktoTutorial
+    linktoTutorial,
+    jsdocextension
   )
-  nav += buildMemberNav(members.modules || [], 'Modules', {}, linkto)
+  nav += buildMemberNav(
+    members.modules || [],
+    'Modules',
+    {},
+    linkto,
+    jsdocextension
+  )
   nav += buildMemberNav(
     members.externals || [],
     'Externals',
     seen,
-    linktoExternal
+    linktoExternal,
+    jsdocextension
   )
-  nav += buildMemberNav(members.namespaces || [], 'Namespaces', seen, linkto)
-  nav += buildMemberNav(members.classes || [], 'Classes', seen, linkto)
-  nav += buildMemberNav(members.interfaces || [], 'Interfaces', seen, linkto)
-  nav += buildMemberNav(members.events || [], 'Events', seen, linkto)
-  nav += buildMemberNav(members.mixins || [], 'Mixins', seen, linkto)
-  nav += buildMemberNav(members.components || [], 'Components', seen, linkto)
+  nav += buildMemberNav(
+    members.namespaces || [],
+    'Namespaces',
+    seen,
+    linkto,
+    jsdocextension
+  )
+  nav += buildMemberNav(
+    members.classes || [],
+    'Classes',
+    seen,
+    linkto,
+    jsdocextension
+  )
+  nav += buildMemberNav(
+    members.interfaces || [],
+    'Interfaces',
+    seen,
+    linkto,
+    jsdocextension
+  )
+  nav += buildMemberNav(
+    members.events || [],
+    'Events',
+    seen,
+    linkto,
+    jsdocextension
+  )
+  nav += buildMemberNav(
+    members.mixins || [],
+    'Mixins',
+    seen,
+    linkto,
+    jsdocextension
+  )
+  nav += buildMemberNav(
+    members.components || [],
+    'Components',
+    seen,
+    linkto,
+    jsdocextension
+  )
 
   if (members.globals && members.globals.length) {
     globalNav = ''
@@ -482,9 +528,13 @@ function buildGroupNav(members, title) {
  * @param {array<object>} members.interfaces
  * @return {string} The HTML for the navigation sidebar.
  */
-function buildNav(members, navTypes = null, betterDocs) {
+function buildNav(members, jsdocextension = null, navTypes = null) {
   const href = 'index.html'
-  var nav = navTypes ? '' : `<h2><a href="${href}">Documentation</a></h2>`
+  const navTitle =
+    jsdocextension && jsdocextension.navTitle
+      ? jsdocextension.navTitle
+      : 'Documentation'
+  var nav = navTypes ? '' : `<h2><a href="${href}">${navTitle}</a></h2>`
 
   var categorised = {}
   var rootScope = {}
@@ -524,11 +574,11 @@ function buildNav(members, navTypes = null, betterDocs) {
     })
   })
 
-  nav += buildGroupNav(rootScope)
+  nav += buildGroupNav(rootScope, null, jsdocextension)
   Object.keys(categorised)
     .sort()
     .forEach(function (category) {
-      nav += buildGroupNav(categorised[category], category)
+      nav += buildGroupNav(categorised[category], category, jsdocextension)
     })
 
   return nav
@@ -565,8 +615,14 @@ exports.publish = (taffyData, opts, tutorials) => {
 
   data = taffyData
 
+  jsdocextensionDefault = {
+    navTitle: 'Documentation',
+    includeSubcategoryTypeInNav: false,
+  }
+
   conf = env.conf.templates || {}
   conf.default = conf.default || {}
+  conf.jsdocextension = conf.jsdocextension || jsdocextensionDefault
 
   templatePath = path.normalize(opts.template)
   view = new template.Template(path.join(templatePath, 'tmpl'))
@@ -753,7 +809,7 @@ exports.publish = (taffyData, opts, tutorials) => {
   view.outputSourceFiles = outputSourceFiles
 
   // once for all
-  view.nav = buildNav(members)
+  view.nav = buildNav(members, conf.jsdocextension)
   attachModuleSymbols(find({ longname: { left: 'module:' } }), members.modules)
 
   // generate the pretty-printed source files first so other pages can link to them

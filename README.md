@@ -76,7 +76,8 @@ Major differences include:
 
 The template allows for the following configuration options:
 
-- option
+- "navTitle" = Title text for the navigation bar. Defaults to "Documentation"
+- "includeSubcategoryTypeInNav" = whether to include the type (ex. modules, clases, etc) along with the subcategory name in the navigation bar. Defaults to false.
 
 The following default template options are also applicable and/or impact the template:
 
@@ -95,15 +96,14 @@ To set these configuration update your jsdoc config file. Below is an example:
   "templates": {
     "cleverLinks": false,
     "monospaceLinks": false,
-    "search": true,
     "default": {
       "useLongnameInNav": true,
       "outputSourceFiles": true
     }
-    "extendedTemplate": {
-
+    "jsdocextension": {
+      "navTitle": "Documentation",
+      "includeSubcategoryTypeInNav": false
     }
-
   }
 }
 ```
