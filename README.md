@@ -108,6 +108,11 @@ To set these configuration update your jsdoc config file. Below is an example:
 }
 ```
 
+## Features for Future Consideration
+
+- category page: link category to a page
+  - possibly with new tag (ex. categoryMain) that indicates that doc should be the main linked page for the category
+
 ## About
 
 **Version:** 1.0.0

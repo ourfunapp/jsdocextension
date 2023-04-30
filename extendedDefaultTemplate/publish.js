@@ -329,11 +329,8 @@ function buildMemberNav(
   itemHeading,
   itemsSeen,
   linktoFn,
-  jsdocextension = null
+  jsdocextension
 ) {
-  const jsdocextensionOpts = jsdocextension
-    ? jsdocextension
-    : { includeSubcategoryTypeInNav: false }
   const subCategories = items.reduce((memo, item) => {
     const subCategory = item.subCategory || ''
     memo[subCategory] = memo[subCategory] || []
@@ -398,7 +395,7 @@ function buildMemberNav(
       if (itemsNav !== '') {
         var heading = itemHeading
         if (subCategoryName) {
-          if (jsdocextensionOpts.includeSubcategoryTypeInNav) {
+          if (jsdocextension.includeSubcategoryTypeInNav) {
             heading = subCategoryName + ' / ' + heading
           } else {
             heading = subCategoryName
@@ -420,7 +417,7 @@ function linktoExternal(longName, name) {
   return linkto(longName, name.replace(/(^"|"$)/g, ''))
 }
 
-function buildGroupNav(members, title, jsdocextension = null) {
+function buildGroupNav(members, title, jsdocextension) {
   var globalNav
   var seenTutorials = {}
   var nav = ''
@@ -528,12 +525,11 @@ function buildGroupNav(members, title, jsdocextension = null) {
  * @param {array<object>} members.interfaces
  * @return {string} The HTML for the navigation sidebar.
  */
-function buildNav(members, jsdocextension = null, navTypes = null) {
+function buildNav(members, jsdocextension, navTypes = null) {
   const href = 'index.html'
-  const navTitle =
-    jsdocextension && jsdocextension.navTitle
-      ? jsdocextension.navTitle
-      : 'Documentation'
+  const navTitle = jsdocextension.navTitle
+    ? jsdocextension.navTitle
+    : 'Documentation'
   var nav = navTypes ? '' : `<h2><a href="${href}">${navTitle}</a></h2>`
 
   var categorised = {}
